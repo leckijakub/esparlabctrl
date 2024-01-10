@@ -37,17 +37,3 @@ def has_ssh(ip):
             return False
         return port["state"] == "open"
     return False
-
-
-# check if a host has a USB device with the given vendor and product id
-def has_nrf_dongle(ip):
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(ip, username="root", password="",)
-    # 1915:520f is the vendor:product id for the nRF52840 dongle
-    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("lsusb | grep 1915:520f")
-    return ssh_stdout.channel.recv_exit_status() == 0
-
-
-def is_beacon(ip):
-    return has_ssh(ip) and has_nrf_dongle(ip)

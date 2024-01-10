@@ -1,0 +1,131 @@
+#!/bin/bash
+
+function interrupt_handler {
+	echo "Interrupted"
+	echo -ne "idle\r" >&$1
+}
+
+function reset {
+	echo -ne "reset\r" >&$1
+}
+
+function jam {
+	echo -ne "jam $2\r" >&$1
+}
+
+function tx {
+	echo -ne "tx $2\r" >&$1
+}
+
+function rx {
+	echo -ne "rx\r" >&$1
+}
+
+function idle {
+	echo -ne "idle\r" >&$1
+}
+
+function status {
+	echo -ne "status\r" >&$1
+}
+
+function print_usage {
+	echo "Usage: $0 [options] <action>"
+	echo "Options:"
+	echo "  -p, --power <power>  Set the power level in dBm"
+	echo "Actions:"
+	echo "  jam                  Jam the channel"
+	echo "  tx                   Transmit a packet"
+	echo "  rx                   Receive a packet"
+	echo "  idle                 Set the radio to idle"
+	echo "  reset                Reset the radio"
+	echo "  write                Write the radio configuration"
+}
+
+function main {
+
+	POSITIONAL_ARGS=()
+	ACTION=""
+	ACTION_CNT=0
+	POWER=0 # default value
+
+	while [[ $# -gt 0 ]]; do
+		case $1 in
+		jam)
+			ACTION="jam"
+			ACTION_CNT=$((ACTION_CNT + 1))
+			shift # past argument
+			;;
+		tx)
+			ACTION="tx"
+			ACTION_CNT=$((ACTION_CNT + 1))
+			shift # past argument
+			;;
+		rx)
+			ACTION="rx"
+			ACTION_CNT=$((ACTION_CNT + 1))
+			shift # past argument
+			;;
+		idle)
+			ACTION="idle"
+			ACTION_CNT=$((ACTION_CNT + 1))
+			shift # past argument
+			;;
+		reset)
+			ACTION="reset"
+			ACTION_CNT=$((ACTION_CNT + 1))
+			shift # past argument
+			;;
+		status)
+			ACTION="status"
+			ACTION_CNT=$((ACTION_CNT + 1))
+			shift # past argument
+			;;
+		write)
+			ACTION="write"
+			ACTION_CNT=$((ACTION_CNT + 1))
+			shift # past argument
+			;;
+		-p | --power)
+			POWER=$2
+			shift # past argument
+			shift # past value
+			;;
+		-* | --*)
+			echo "Unknown option $1"
+			exit 1
+			;;
+		*)
+			POSITIONAL_ARGS+=("$1") # save positional arg
+			shift                   # past argument
+			;;
+		esac
+	done
+
+	set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
+	DEVICE=$1
+
+	if [[ $ACTION_CNT -ne 1 ]]; then
+		echo "Please specify exactly one action"
+		print_usage
+		exit 1
+	fi
+	exec 4<$DEVICE 5>$DEVICE
+	stty -F $DEVICE 115200 -echo
+
+	trap 'interrupt_handler 5' SIGINT SIGTERM SIGKILL
+	cat <&4 & pid=$!
+	echo -ne "\r" >&5
+
+	# execute action
+	eval $ACTION 5 $POWER
+	# if action is rx, then wait for pid, else kill pid
+	if [[ $ACTION == "rx" ]]; then
+		wait $pid
+	else
+		sleep 1
+		kill $pid
+	fi
+}
+
+main $@
