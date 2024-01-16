@@ -1,6 +1,7 @@
 import nmap3
-import paramiko
-from pprint import pprint
+
+MAX_BEACONS = 48  # limitation of the ethernet switch
+
 
 def get_network_devices(subnet):
     nmd = nmap3.NmapHostDiscovery()
@@ -28,7 +29,7 @@ def has_ssh(ip):
         return False
     if len(nmap_result["ports"]) == 0:
         return False
-    for port in nmap_result["ports"]:    #portid
+    for port in nmap_result["ports"]:  # portid
         if "portid" not in port:
             continue
         if port["portid"] != "22":

@@ -3,15 +3,17 @@
 # For unknown reasons the concorrent executor.submit method is causing terminal to not echo input after program finishes.
 # as a workaround, run `stty sane` after program finishes.
 
-from pprint import pprint
 import concurrent.futures
 
 from espar_lab import network
-from espar_lab.beacon import Beacon
+from espar_lab.beacon import Beacon, BeaconConfig, BeaconState
+from espar_lab.espar import ESPAR
+from espar_lab.testcase import Testcase
 
 
 SERVER_IP = "192.0.2.0"
 SUBNET = "192.0.2.0/24"
+
 
 def init_beacon(ip, id):
     try:
@@ -21,17 +23,19 @@ def init_beacon(ip, id):
         print(e)
         return None
 
-def main():
-    hosts = network.get_network_devices(SUBNET)
-    beacons_addrs = [host for host in hosts if host != SERVER_IP]
-    beacons: list[Beacon] = []
+
+def init_beacons(subnet, server_ip):
+    hosts = network.get_network_devices(subnet)
+    beacons_addrs = [host for host in hosts if host != server_ip]
+    beacons = []
     beacon_cnt = 0
-    with concurrent.futures.ThreadPoolExecutor() as executor:
+    with concurrent.futures.ThreadPoolExecutor(
+        max_workers=network.MAX_BEACONS
+    ) as executor:
         futures = {}
         for beacon_addr in beacons_addrs:
             futures[executor.submit(init_beacon, beacon_addr, beacon_cnt)] = beacon_addr
             beacon_cnt += 1
-        beacon_cnt = 0
         for future in concurrent.futures.as_completed(futures):
             beacon_addr = futures[future]
             beacon = future.result()
@@ -40,15 +44,26 @@ def main():
                 print(f"Beacon {beacon.id} with IP: {beacon.ip} created.")
             else:
                 print(f"Failed to create beacon with IP: {beacon_addr}.")
+    beacons.sort(key=lambda beacon: beacon.id)
+    return beacons
 
 
-#    print("Checking beacon status...")
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        results = list(executor.map(lambda beacon: beacon.status(), beacons))
+def main():
+    beacons: list[Beacon] = init_beacons(SUBNET, SERVER_IP)
 
-    for result, beacon in zip(results, beacons):
-        print(f"Beacon {beacon.id} ({beacon.ip}) status: {result}")
+    espar = ESPAR()
 
+    testcase_1_roles = [BeaconConfig(BeaconState.IDLE, 0) for _ in beacons]
+    testcase_1_roles[0] = BeaconConfig(BeaconState.TX, 0)
+    testcase_1_roles[9] = BeaconConfig(BeaconState.JAM, 4)
+
+    testcase_1 = Testcase(
+        espar,
+        beacons,
+        testcase_1_roles,
+        name="Test 1",
+    )
+    testcase_1.run()
 
 
 if __name__ == "__main__":
