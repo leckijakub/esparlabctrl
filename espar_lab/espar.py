@@ -8,14 +8,22 @@ class ESPAR:
 
     def reset(self):
         # nrfjprog --family NRF52 --reset
-        reset_cmd = subprocess.Popen(["nrfjprog", "--family", "NRF52", "--reset"])
+        reset_cmd = subprocess.Popen(
+            ["nrfjprog", "--family", "NRF52", "--reset"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
         reset_cmd.wait()
         if reset_cmd.returncode != 0:
             raise Exception(f"Error resetting device: {reset_cmd.stderr.read()}")
 
     def halt(self):
         # nrfjprog --family NRF52 --halt
-        halt_cmd = subprocess.Popen(["nrfjprog", "--family", "NRF52", "--halt"])
+        halt_cmd = subprocess.Popen(
+            ["nrfjprog", "--family", "NRF52", "--halt"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
         halt_cmd.wait()
         if halt_cmd.returncode != 0:
             raise Exception(f"Error halting device: {halt_cmd.stderr.read()}")
