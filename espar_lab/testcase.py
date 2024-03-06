@@ -4,7 +4,20 @@ from .network import MAX_BEACONS
 
 import concurrent.futures
 import re
+import time
 
+
+def default_final_condition(line: str) -> bool:
+    if "BPER" in line:
+        bper = float(re.search("BPER: \d+\.\d+", line).group().split(":")[1])
+        if bper <= 0.2:
+            default_final_condition.ok_counter += 1
+        else:
+            default_final_condition.ok_counter = 0
+        if default_final_condition.ok_counter >= 100:
+            return True
+    return False
+default_final_condition.ok_counter = 0
 
 class Testcase:
     def __init__(
@@ -40,28 +53,21 @@ class Testcase:
                 )
             )
 
-    def run(self):
+
+    def run(self, final_condition=default_final_condition):
+        print(f"Running testcase {self.name}...")
         print("Configuring beacons...")
         self.config_beacons()
         print("Starting espar...")
+        start_time_ns = time.time_ns()
         with self.espar.run() as espar_proc:
             try:
                 ok_count = 0
                 for line in iter(espar_proc.stdout.readline, ""):
-                    print(line, end="")
-                    # use regex to get the float value from the line match '.* BPER: -XX.XX *'
-                    if "BPER" in line:
-                        bper = float(
-                            re.search("BPER: \d+\.\d+", line).group().split(":")[1]
-                        )
-                        if bper <= 0.2:
-                            ok_count += 1
-                        else:
-                            ok_count = 0
-                        if ok_count >= 100:
-                            print("Testcase passed.")
-                            break
-
+                    print(f"[{time.time_ns() - start_time_ns}]: {line}", end="")
+                    if final_condition(line):
+                        print("Testcase finished.")
+                        break
             except KeyboardInterrupt:
                 print("KeyboardInterrupt caught. Exiting...")
         print("Espar finished.")

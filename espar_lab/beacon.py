@@ -1,5 +1,6 @@
 import paramiko
 import enum
+import subprocess
 
 from . import network as net
 
@@ -40,6 +41,9 @@ class Beacon:
                 f"Beacon {self.ip} does not have an nRF52840 dongle attached."
             )
 
+        if self.push_beacon_ctrl_app() != 0:
+            raise Exception(f"Couldn't push beacon_ctrl app to beacon {self.ip}")
+
         if self.status() == None:
             raise Exception(f"Couldn't get status of beacon {self.ip}")
 
@@ -68,6 +72,25 @@ class Beacon:
                 ):  # check if the state is a valid BeaconState
                     return BeaconState(state)
         return None
+
+    def push_beacon_ctrl_app(self):
+        ssh_stdin, ssh_stdout, ssh_stderr = self.ssh.exec_command(
+            f"ls {self.beacon_ctrl_app}"
+        )
+        if ssh_stdout.channel.recv_exit_status() == 0:
+            # beacon_ctrl app already exists, don't push it
+            return 0
+
+        # beacon_ctrl app not found, push it
+        proc = subprocess.Popen(
+            ["scp", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=accept-new", "scripts/beacon_ctrl", f"root@{self.ip}:{self.beacon_ctrl_app}"]
+        )
+        proc.wait()
+        return proc.returncode
+        # ftp_client = self.ssh.open_sftp()
+        # ftp_client.put("scripts/beacon_ctrl", self.beacon_ctrl_app)
+        # print(f"Beacon {self.id} beacon_ctrl app pushed.")
+        # ftp_client.close()
 
     def configure(self, config: BeaconConfig):
         if config.state == BeaconState.IDLE:
