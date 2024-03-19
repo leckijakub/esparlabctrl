@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
-from espar_lab.beacon import Beacon, BeaconConfig, BeaconState
-from espar_lab.espar import ESPAR
-from espar_lab.testcase import Testcase
-from labctrl import init_beacons
+from esparlabctrl.espar_lab.beacon import Beacon, BeaconConfig, BeaconState
+from esparlabctrl.espar_lab.espar import Espar
+from esparlabctrl.espar_lab.testcase import TestCase
+from esparlabctrl.labctrl import init_beacons
+
+import re
 
 
 SERVER_IP = "192.0.2.0"
@@ -23,9 +25,9 @@ def generate_testcase_stationary_transmitter(
 
 
 def main():
-    test_cycles = 10
+    test_cycles = 100
     beacons: list[Beacon] = init_beacons(SUBNET, SERVER_IP)
-    espar = ESPAR()
+    espar = Espar()
 
     for cycle in range(test_cycles):
         print(f"Test cycle {cycle+1}/{test_cycles}")
@@ -33,13 +35,13 @@ def main():
         for i, testcase_roles in enumerate(
             generate_testcase_stationary_transmitter(len(beacons))
         ):
-            testcase = Testcase(
+            testcase = TestCase(
                 espar,
                 beacons,
                 testcase_roles,
                 name=f"Cycle: {cycle+1}; Test {i+1}",
             )
-            testcase.run()
+            testcase.run(final_condition=lambda line: "CHAR" in line and re.search("CHAR: [01]+", line).group().split(" ")[1] == "111111111111")
 
 
 if __name__ == "__main__":

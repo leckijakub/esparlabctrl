@@ -4,7 +4,7 @@ from contextlib import contextmanager
 import time
 
 
-class ESPAR:
+class Espar:
     def __init__(self):
         self.dev_str = "/dev/ttyUSB0"
 

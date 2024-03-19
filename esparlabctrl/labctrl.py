@@ -5,10 +5,10 @@
 
 import concurrent.futures
 
-from espar_lab import network
-from espar_lab.beacon import Beacon, BeaconConfig, BeaconState
-from espar_lab.espar import ESPAR
-from espar_lab.testcase import Testcase
+from .espar_lab import network
+from .espar_lab.beacon import Beacon, BeaconConfig, BeaconState
+from .espar_lab.espar import Espar
+from .espar_lab.testcase import TestCase
 
 
 SERVER_IP = "192.0.2.0"
@@ -51,13 +51,13 @@ def init_beacons(subnet, server_ip):
 def main():
     beacons: list[Beacon] = init_beacons(SUBNET, SERVER_IP)
 
-    espar = ESPAR()
+    espar = Espar()
 
     testcase_1_roles = [BeaconConfig(BeaconState.IDLE, 0) for _ in beacons]
     testcase_1_roles[0] = BeaconConfig(BeaconState.TX, 0)
     testcase_1_roles[9] = BeaconConfig(BeaconState.JAM, 4)
 
-    testcase_1 = Testcase(
+    testcase_1 = TestCase(
         espar,
         beacons,
         testcase_1_roles,

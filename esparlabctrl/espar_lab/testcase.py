@@ -1,4 +1,4 @@
-from .espar import ESPAR
+from .espar import Espar
 from .beacon import Beacon, BeaconConfig, BeaconState
 from .network import MAX_BEACONS
 
@@ -19,10 +19,10 @@ def default_final_condition(line: str) -> bool:
     return False
 default_final_condition.ok_counter = 0
 
-class Testcase:
+class TestCase:
     def __init__(
         self,
-        espar: ESPAR,
+        espar: Espar,
         beacons: list[Beacon],
         roles: list[BeaconConfig],
         name="test",
@@ -72,3 +72,5 @@ class Testcase:
                 print("KeyboardInterrupt caught. Exiting...")
         print("Espar finished.")
         self.idle_beacons()
+
+TestCase.__test__ = False
