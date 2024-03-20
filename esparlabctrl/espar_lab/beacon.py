@@ -1,6 +1,7 @@
 import paramiko
 import enum
 import subprocess
+import concurrent.futures
 
 from . import network as net
 
@@ -87,10 +88,6 @@ class Beacon:
         )
         proc.wait()
         return proc.returncode
-        # ftp_client = self.ssh.open_sftp()
-        # ftp_client.put("scripts/beacon_ctrl", self.beacon_ctrl_app)
-        # print(f"Beacon {self.id} beacon_ctrl app pushed.")
-        # ftp_client.close()
 
     def configure(self, config: BeaconConfig):
         if config.state == BeaconState.IDLE:
@@ -114,3 +111,36 @@ class Beacon:
             raise Exception(f"Error setting beacon state: {ssh_stderr.read()}")
         else:
             print(f"Beacon {self.id} configured as {action} with power {config.power}.")
+
+
+def init_beacon(ip, id):
+    try:
+        beacon = Beacon(ip, id)
+        return beacon
+    except Exception as e:
+        print(e)
+        return None
+
+
+def init_beacons(subnet, server_ip):
+    hosts = net.get_network_devices(subnet)
+    beacons_addrs = [host for host in hosts if host != server_ip]
+    beacons = []
+    beacon_cnt = 0
+    with concurrent.futures.ThreadPoolExecutor(
+        max_workers=net.MAX_BEACONS
+    ) as executor:
+        futures = {}
+        for beacon_addr in beacons_addrs:
+            futures[executor.submit(init_beacon, beacon_addr, beacon_cnt)] = beacon_addr
+            beacon_cnt += 1
+        for future in concurrent.futures.as_completed(futures):
+            beacon_addr = futures[future]
+            beacon = future.result()
+            if beacon is not None:
+                beacons.append(beacon)
+                print(f"Beacon {beacon.id} with IP: {beacon.ip} created.")
+            else:
+                print(f"Failed to create beacon with IP: {beacon_addr}.")
+    beacons.sort(key=lambda beacon: beacon.id)
+    return beacons

@@ -6,9 +6,6 @@ build-backend = "hatchling.build"
 name = "espar_lab"
 
 [tool.pytest.ini_options]
-# addopts = [
-#    "--import-mode=importlib",
-# ]
 testpaths = "esparlabctrl/tests"
 markers = [
     "mock: mark a test as a test that uses a mock",

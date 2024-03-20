@@ -3,7 +3,7 @@ import nmap3
 MAX_BEACONS = 48  # limitation of the ethernet switch
 
 
-def get_network_devices(subnet):
+def get_network_devices(subnet) -> list[str]:
     nmd = nmap3.NmapHostDiscovery()
     nmap_result = nmd.nmap_no_portscan(subnet)
 
