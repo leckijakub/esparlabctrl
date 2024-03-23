@@ -1,4 +1,7 @@
-from . import espar_lab
+from .espar_lab import LabRunner, BeaconConfig, BeaconState
+
+import time
+
 
 class Experiment():
     json_schema = {
@@ -28,8 +31,16 @@ class Experiment():
                 },
                 "required": ["name", "characteristics", "tx_beacon", "tx_power", "jammers", "duration"]
             }
-    def __init__(self, json: dict) -> None:
+    def __init__(self, json: dict, labRunner: LabRunner) -> None:
         self.config = json
+        self.labRunner = labRunner
+        self.start_time = time.gmtime(0)
+
+    def final_condition_duration(self):
+        # Set start time if it is not set
+        if self.start_time == time.gmtime(0):
+            self.start_time = time.time()
+        return time.time() - self.start_time >= self.config['duration']
 
     def run(self):
         print(f"Running experiment {self.config['name']}")
@@ -39,5 +50,14 @@ class Experiment():
         print(f"Jammers: {self.config['jammers']}")
         print(f"Duration: {self.config['duration']}")
 
-        espar = espar_lab.Espar()
-        beacons = espar_lab.init_beacons()
+        roles = [BeaconConfig(BeaconState.IDLE, 0) for _ in range(self.labRunner.num_beacons)]
+        roles[self.config['tx_beacon']] = BeaconConfig(BeaconState.TX, self.config['tx_power'])
+        for jammer in self.config['jammers']:
+            roles[jammer['id']] = BeaconConfig(BeaconState.JAM, jammer['power'])
+
+        self.labRunner.config_beacons(roles)
+        for i in range(1, len(self.config['characteristics'])):
+            print(f"Configuring characteristic {i}")
+            self.labRunner.config_espar_characteristic(i, self.config['characteristics'][i])
+        print("Running lab...")
+        self.labRunner.run(final_condition=self.final_condition_duration)

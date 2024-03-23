@@ -22,18 +22,14 @@ def generate_testcase_stationary_transmitter(
 
 def test_lab_runner_lab_characteristic(beacon_mock, network_mock, espar_mock):
     test_cycles = 10
-    beacons: list[Beacon] = init_beacons(SUBNET, SERVER_IP)
-    espar = Espar()
 
+    labRunner = LabRunner(SUBNET, SERVER_IP)
     for cycle in range(test_cycles):
         print(f"Test cycle {cycle+1}/{test_cycles}")
         for i, testcase_roles in enumerate(
-            generate_testcase_stationary_transmitter(len(beacons))
+            generate_testcase_stationary_transmitter(labRunner.num_beacons)
         ):
-            testcase = LabRunner(
-                espar,
-                beacons,
-                testcase_roles,
-                name=f"Cycle: {cycle+1}; Test {i+1}",
-            )
-            testcase.run()
+            print("Configuring beacons...")
+            labRunner.config_beacons(testcase_roles)
+            print("Running lab...")
+            labRunner.run()

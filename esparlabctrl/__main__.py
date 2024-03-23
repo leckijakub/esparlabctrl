@@ -1,8 +1,9 @@
 import argparse
 import json
 import jsonschema
-from python_json_config import ConfigBuilder
+from .espar_lab import LabRunner
 from .experiment import Experiment
+
 
 schema= {
     "type": "object",
@@ -37,6 +38,8 @@ except jsonschema.exceptions.ValidationError as e:
     print(f"Config loading error: {e.message}")
     exit(1)
 
+labRunner = LabRunner(json_obj["lab"]["subnet"], json_obj["lab"]["server_ip"])
+
 for experiment in json_obj["experiments"]:
-    exp = Experiment(experiment)
+    exp = Experiment(experiment, labRunner)
     exp.run()

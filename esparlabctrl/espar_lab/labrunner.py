@@ -1,5 +1,5 @@
 from .espar import Espar
-from .beacon import Beacon, BeaconConfig, BeaconState
+from .beacon import Beacon, BeaconConfig, BeaconState, init_beacons
 from .network import MAX_BEACONS
 
 import concurrent.futures
@@ -22,25 +22,24 @@ default_final_condition.ok_counter = 0
 class LabRunner:
     def __init__(
         self,
-        espar: Espar,
-        beacons: list[Beacon],
-        roles: list[BeaconConfig],
-        name="test",
-        description="",
+        subnet: str,
+        server_ip: str
     ):
-        self.espar = espar
-        self.beacons = beacons
-        self.roles = roles
-        self.name = name
-        self.description = description
+        self.espar = Espar()
+        self.beacons = init_beacons(subnet, server_ip)
+        # self.roles = [BeaconConfig(BeaconState.IDLE, 0) for _ in range(len(self.beacons))]
 
-    def config_beacons(self):
+    @property
+    def num_beacons(self):
+        return len(self.beacons)
+
+    def config_beacons(self, roles: list[BeaconConfig]):
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_BEACONS) as executor:
             results = list(
                 executor.map(
                     lambda beacon, role: beacon.configure(role),
                     self.beacons,
-                    self.roles,
+                    roles,
                 )
             )
 
@@ -53,11 +52,10 @@ class LabRunner:
                 )
             )
 
+    def config_espar_char(self, characteristic: int):
+        raise NotImplementedError()
 
     def run(self, final_condition=default_final_condition):
-        print(f"Running testcase {self.name}...")
-        print("Configuring beacons...")
-        self.config_beacons()
         print("Starting espar...")
         start_time_ns = time.time_ns()
         with self.espar.run() as espar_proc:
