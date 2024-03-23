@@ -2,9 +2,9 @@
 
 # For unknown reasons the concorrent executor.submit method is causing terminal to not echo input after program finishes.
 # as a workaround, run `stty sane` after program finishes.
-from .espar_lab.beacon import Beacon, BeaconConfig, BeaconState
+from .espar_lab.beacon import Beacon, BeaconConfig, BeaconState, init_beacons
 from .espar_lab.espar import Espar
-from .espar_lab.testcase import TestCase
+from .espar_lab.labrunner import LabRunner
 
 
 SERVER_IP = "192.0.2.0"
@@ -21,7 +21,7 @@ def main():
     testcase_1_roles[0] = BeaconConfig(BeaconState.TX, 0)
     testcase_1_roles[9] = BeaconConfig(BeaconState.JAM, 4)
 
-    testcase_1 = TestCase(
+    testcase_1 = LabRunner(
         espar,
         beacons,
         testcase_1_roles,

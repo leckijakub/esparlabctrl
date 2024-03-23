@@ -19,7 +19,7 @@ def default_final_condition(line: str) -> bool:
     return False
 default_final_condition.ok_counter = 0
 
-class TestCase:
+class LabRunner:
     def __init__(
         self,
         espar: Espar,
@@ -73,4 +73,4 @@ class TestCase:
         print("Espar finished.")
         self.idle_beacons()
 
-TestCase.__test__ = False
+LabRunner.__test__ = False

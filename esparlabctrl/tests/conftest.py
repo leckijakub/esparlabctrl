@@ -1,7 +1,7 @@
 import pytest
 import subprocess
 from unittest.mock import MagicMock
-from esparlabctrl import BeaconState, BeaconConfig
+from esparlabctrl.espar_lab import BeaconState, BeaconConfig
 
 mock_beacon_config = BeaconConfig(BeaconState.IDLE, 0)
 

@@ -2,7 +2,7 @@
 
 from esparlabctrl.espar_lab.beacon import Beacon, BeaconConfig, BeaconState
 from esparlabctrl.espar_lab.espar import Espar
-from esparlabctrl.espar_lab.testcase import TestCase
+from esparlabctrl.espar_lab.labrunner import LabRunner
 from esparlabctrl.labctrl import init_beacons
 
 
@@ -33,7 +33,7 @@ def main():
         for i, testcase_roles in enumerate(
             generate_testcase_stationary_transmitter(len(beacons))
         ):
-            testcase = TestCase(
+            testcase = LabRunner(
                 espar,
                 beacons,
                 testcase_roles,

@@ -2,7 +2,7 @@
 
 from esparlabctrl.espar_lab.beacon import Beacon, BeaconConfig, BeaconState, init_beacons
 from esparlabctrl.espar_lab.espar import Espar
-from esparlabctrl.espar_lab.testcase import TestCase
+from esparlabctrl.espar_lab.labrunner import LabRunner
 
 
 SERVER_IP = "192.0.2.0"
@@ -20,7 +20,7 @@ def generate_testcase_stationary_transmitter(
         yield testcase_roles
 
 
-def test_experiment_lab_characteristic(beacon_mock, network_mock, espar_mock):
+def test_lab_runner_lab_characteristic(beacon_mock, network_mock, espar_mock):
     test_cycles = 10
     beacons: list[Beacon] = init_beacons(SUBNET, SERVER_IP)
     espar = Espar()
@@ -30,7 +30,7 @@ def test_experiment_lab_characteristic(beacon_mock, network_mock, espar_mock):
         for i, testcase_roles in enumerate(
             generate_testcase_stationary_transmitter(len(beacons))
         ):
-            testcase = TestCase(
+            testcase = LabRunner(
                 espar,
                 beacons,
                 testcase_roles,
