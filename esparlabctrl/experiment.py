@@ -36,7 +36,7 @@ class Experiment():
         self.labRunner = labRunner
         self.start_time = time.gmtime(0)
 
-    def final_condition_duration(self):
+    def final_condition_duration(self, line):
         # Set start time if it is not set
         if self.start_time == time.gmtime(0):
             self.start_time = time.time()
@@ -58,6 +58,6 @@ class Experiment():
         self.labRunner.config_beacons(roles)
         for i in range(1, len(self.config['characteristics'])):
             print(f"Configuring characteristic {i}")
-            self.labRunner.config_espar_characteristic(i, self.config['characteristics'][i])
+            self.labRunner.config_espar_char(self.config['characteristics'][i])
         print("Running lab...")
         self.labRunner.run(final_condition=self.final_condition_duration)

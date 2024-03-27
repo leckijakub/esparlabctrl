@@ -11,7 +11,6 @@ SERVER_IP = "192.0.2.0"
 SUBNET = "192.0.2.0/24"
 
 
-
 def main():
     beacons: list[Beacon] = init_beacons(SUBNET, SERVER_IP)
 

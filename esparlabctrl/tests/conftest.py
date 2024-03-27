@@ -30,7 +30,7 @@ def fixture_beacon_mock(monkeypatch):
 @pytest.fixture(name="network_mock")
 def fixture_network_mock(monkeypatch):
     monkeypatch.setattr("esparlabctrl.espar_lab.network.has_ssh", lambda ip: True)
-    monkeypatch.setattr("esparlabctrl.espar_lab.network.get_network_devices", lambda subnet: ["192.168.0.1"])
+    monkeypatch.setattr("esparlabctrl.espar_lab.network.get_network_devices", lambda subnet: ["192.168.0.1", "192.168.0.2"])
     yield
     monkeypatch.undo()
 
@@ -44,6 +44,7 @@ def fixture_espar_mock(monkeypatch, data_dir):
         return mock
     monkeypatch.setattr("esparlabctrl.espar_lab.espar.Espar.reset", lambda self: None)
     monkeypatch.setattr("esparlabctrl.espar_lab.espar.Espar.halt", lambda self: None)
+    monkeypatch.setattr("esparlabctrl.espar_lab.espar.Espar.set_char", lambda self, char: None)
     monkeypatch.setattr("subprocess.Popen", mock_popen)
     yield
     monkeypatch.undo()

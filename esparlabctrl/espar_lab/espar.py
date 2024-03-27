@@ -8,6 +8,9 @@ class Espar:
     def __init__(self):
         self.dev_str = "/dev/ttyUSB0"
 
+    def set_char(self, char):
+        raise NotImplementedError
+
     def reset(self):
         # nrfjprog --family NRF52 --reset
         reset_cmd = subprocess.Popen(

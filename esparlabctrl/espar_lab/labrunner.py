@@ -9,7 +9,7 @@ import time
 
 def default_final_condition(line: str) -> bool:
     if "BPER" in line:
-        bper = float(re.search("BPER: \d+\.\d+", line).group().split(":")[1])
+        bper = float(re.search(r"BPER: \d+\.\d+", line).group().split(":")[1])
         if bper <= 0.2:
             default_final_condition.ok_counter += 1
         else:
@@ -53,7 +53,7 @@ class LabRunner:
             )
 
     def config_espar_char(self, characteristic: int):
-        raise NotImplementedError()
+        self.espar.set_char(characteristic)
 
     def run(self, final_condition=default_final_condition):
         print("Starting espar...")
