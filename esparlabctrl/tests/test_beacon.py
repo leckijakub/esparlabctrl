@@ -1,8 +1,6 @@
 import pytest
-from esparlabctrl.espar_lab import Beacon, BeaconState, BeaconConfig
+from esparlabctrl.espar_lab import Beacon, BeaconState
 
-from esparlabctrl.espar_lab import network as net
-from paramiko import SSHClient
 
 TEST_BEACON_IP = "192.168.0.1"
 TEST_BEACON_ID = 0

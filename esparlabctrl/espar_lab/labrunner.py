@@ -5,6 +5,7 @@ from .network import MAX_BEACONS
 import concurrent.futures
 import re
 import time
+import sys
 
 
 def default_final_condition(line: str) -> bool:
@@ -33,7 +34,7 @@ class LabRunner:
     def num_beacons(self):
         return len(self.beacons)
 
-    def config_beacons(self, roles: list[BeaconConfig]):
+    def config_beacons(self, roles: 'list[BeaconConfig]'):
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_BEACONS) as executor:
             results = list(
                 executor.map(
@@ -55,14 +56,23 @@ class LabRunner:
     def config_espar_char(self, characteristic: int):
         self.espar.set_char(characteristic)
 
-    def run(self, final_condition=default_final_condition):
+    def run(self, final_condition=default_final_condition, output=None, timestamp=True):
+
+        default_final_condition.ok_counter = 0
         print("Starting espar...")
         start_time_ns = time.time_ns()
+        if output:
+            f = open(output, 'w')
+        else:
+            f = sys.stdout
         with self.espar.run() as espar_proc:
             try:
                 ok_count = 0
                 for line in iter(espar_proc.stdout.readline, ""):
-                    print(f"[{time.time_ns() - start_time_ns}]: {line}", end="")
+                    if timestamp:
+                        print(f"[{time.time_ns() - start_time_ns}]: {line}", end="", file=f)
+                    else:
+                        print(line, end="", file=f)
                     if final_condition(line):
                         print("Testcase finished.")
                         break

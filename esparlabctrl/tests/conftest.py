@@ -3,6 +3,27 @@ import subprocess
 from unittest.mock import MagicMock
 from esparlabctrl.espar_lab import BeaconState, BeaconConfig
 
+def pytest_addoption(parser):
+    parser.addoption(
+        "--mock",
+        action="store_true",
+        default=False,
+        help="Run mock tests",
+    )
+
+def pytest_collection_modifyitems(config, items):
+    if not config.getoption("--mock"):
+        skipper = pytest.mark.skip(reason="Only run when --mock is given")
+        for item in items:
+            if "mock" in item.keywords:
+                item.add_marker(skipper)
+    else:
+        skipper = pytest.mark.skip(reason="Don't run on real hardware when --mock is given")
+        for item in items:
+            if "mock" not in item.keywords:
+                item.add_marker(skipper)
+
+
 mock_beacon_config = BeaconConfig(BeaconState.IDLE, 0)
 
 def mock_beacon_configure(self, config):
