@@ -105,10 +105,10 @@ class Beacon:
             )
         else:
             ssh_stdin, ssh_stdout, ssh_stderr = self.ssh.exec_command(
-                f"{self.beacon_ctrl_app} {self.beacon_dev_str} {action} {config.power}"
+                f"{self.beacon_ctrl_app} {self.beacon_dev_str} {action} -p {config.power}"
             )
         if ssh_stdout.channel.recv_exit_status() != 0:
-            raise Exception(f"Error setting beacon state: {ssh_stderr.read()}")
+            raise Exception(f"Error setting beacon state: {ssh_stdout.read()} {ssh_stderr.read()}")
         else:
             print(f"Beacon {self.id} configured as {action} with power {config.power}.")
 

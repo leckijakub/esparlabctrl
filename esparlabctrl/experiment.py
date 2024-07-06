@@ -56,8 +56,8 @@ class Experiment():
             roles[jammer['id']] = BeaconConfig(BeaconState.JAM, jammer['power'])
 
         self.labRunner.config_beacons(roles)
-        for i in range(1, len(self.config['characteristics'])):
-            print(f"Configuring characteristic {i}")
-            self.labRunner.config_espar_char(self.config['characteristics'][i])
+        #for i in range(1, len(self.config['characteristics'])):
+        #    print(f"Configuring characteristic {i}")
+        #    self.labRunner.config_espar_char(self.config['characteristics'][i])
         print("Running lab...")
         self.labRunner.run(final_condition=self.final_condition_duration)
